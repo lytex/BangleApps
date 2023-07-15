@@ -49,7 +49,7 @@ function draw() {
     } else {
       g.drawString(("0"+h).substr(-2) + ":" + ("0"+m).substr(-2), g.getWidth() / 2, 30);
     }
-    g.setFontAlign(1, 0);
+    g.setFontAlign(1, 1);
     g.setFont('Vector', 24);
     g.drawString(String(d).padStart(2, '0') + "/" + String(mon).padStart(2, '0'), g.getWidth() -6, 98);
     g.setFont('Vector', 40);
