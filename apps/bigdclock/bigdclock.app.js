@@ -50,7 +50,7 @@ function draw() {
     }
     g.setFontAlign(1, -1);
     g.drawString(String(d).padStart(2, '0'), g.getWidth() -6, 98);
-    g.setFont('Vector', 48);
+    g.setFont('Vector', 44);
     g.setFontAlign(-1, -1);
     g.drawString(dow.slice(0,3).toUpperCase(), 6, 103);
 
