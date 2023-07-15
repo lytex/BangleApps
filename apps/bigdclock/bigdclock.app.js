@@ -50,9 +50,9 @@ function draw() {
       g.drawString(("0"+h).substr(-2) + ":" + ("0"+m).substr(-2), g.getWidth() / 2, 30);
     }
     g.setFontAlign(1, -1);
-    g.setFontVector(32);
+    g.setFontVector(48);
     g.drawString(String(d).padStart(2, '0') + "/" + String(mon).padStart(2, '0'), g.getWidth() -6, 98);
-    g.setFontVector(32);
+    g.setFontVector(48);
     g.setFontAlign(-1, -1);
     g.drawString(dow.slice(0,3).toUpperCase(), 6, 103);
 
