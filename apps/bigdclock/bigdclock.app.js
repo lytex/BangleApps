@@ -27,6 +27,7 @@ function draw() {
     var h = date.getHours(),
         m = date.getMinutes();
     var d = date.getDate();
+    var mon = date.getMonth();
     var is12Hour = (require("Storage").readJSON("setting.json", 1) || {})["12hour"];
     var dow = require("date_utils").dows(0,1)[date.getDay()];
 
@@ -48,9 +49,10 @@ function draw() {
     } else {
       g.drawString(("0"+h).substr(-2) + ":" + ("0"+m).substr(-2), g.getWidth() / 2, 30);
     }
-    g.setFontAlign(1, -1);
-    g.drawString(String(d).padStart(2, '0'), g.getWidth() -6, 98);
-    g.setFont('Vector', 32);
+    g.setFontAlign(1, -1);'
+    g.setFontVector(16);
+    g.drawString(String(d).padStart(2, '0') + "/" + String(mon).padStart(2, '0'), g.getWidth() -6, 98);
+    g.setFontVector(16);
     g.setFontAlign(-1, -1);
     g.drawString(dow.slice(0,3).toUpperCase(), 6, 103);
 
