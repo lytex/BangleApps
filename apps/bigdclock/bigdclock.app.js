@@ -52,7 +52,7 @@ function draw() {
     g.drawString(d, g.getWidth() -6, 98);
     g.setFont('Vector', 52);
     g.setFontAlign(-1, -1);
-    g.drawString(dow.slice(0,2).toUpperCase(), 6, 103);
+    g.drawString(dow.slice(0,3).toUpperCase(), 6, 103);
 
     g.fillRect(9,159,166,171);
     g.fillRect(167,163,170,167);
