@@ -51,7 +51,7 @@ function draw() {
     }
     g.setFontAlign(1, -1);
     g.setFont('Vector', 24);
-    g.drawString(String(d).padStart(2, '0') + "/" + String(mon).padStart(2, '0'), g.getWidth() -6, 98);
+    g.drawString("\n" + String(d).padStart(2, '0') + "/" + String(mon).padStart(2, '0'), g.getWidth() -6, 98);
     g.setFont('Vector', 40);
     g.setFontAlign(-1, -1);
     g.drawString(dow.slice(0,3).toUpperCase(), 6, 103);
