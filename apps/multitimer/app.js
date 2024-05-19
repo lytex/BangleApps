@@ -1,11 +1,12 @@
+{
 Bangle.loadWidgets();
 Bangle.drawWidgets();
 
-var R = Bangle.appRect;
-var layer;
-var drag;
-var timerInt1 = [];
-var timerInt2 = [];
+const R = Bangle.appRect;
+let layer;
+let drag;
+let timerInt1 = [];
+let timerInt2 = [];
 
 function getCurrentTime() {
   let time = new Date();
@@ -66,8 +67,7 @@ function setHM(alarm, on) {
 
 function drawTimers() {
   layer = 0;
-  var timers = require("sched").getAlarms().filter(a => a.timer && a.appid == "multitimer");
-  var alarms = require("sched").getAlarms();
+  const timers = require("sched").getAlarms().filter(a => a.timer && a.appid == "multitimer");
 
   function updateTimers(idx) {
     if (!timerInt1[idx]) timerInt1[idx] = setTimeout(function() {
@@ -78,15 +78,15 @@ function drawTimers() {
     }, 1000 - (timers[idx].t % 1000));
   }
 
-  var s = E.showScroller({
+  const s = E.showScroller({
     h : 40, c : timers.length+2,
     back : function() {load();},
     draw : (idx, r) => {
       function drawMenuItem(a) {
+        let msg = "";
         g.setClipRect(R.x,R.y,R.x2,R.y2);
         if (idx > 0 && timers[idx-1].msg) msg = "\n"+(timers[idx-1].msg.length > 10 ?
           timers[idx-1].msg.substring(0, 10)+"..." : timers[idx-1].msg);
-        else msg = "";
         return g.setColor(g.theme.bg2).fillRect({x:r.x+4,y:r.y+2,w:r.w-8, h:r.h-4, r:5})
         .setColor(g.theme.fg2).setFont("6x8:2").setFontAlign(-1,0).drawString(a+msg,r.x+12,r.y+(r.h/2));
       }
@@ -112,22 +112,22 @@ function drawTimers() {
       else if (idx > 0 && idx < timers.length+1) timerMenu(idx-1);
     }
   });
+  setUI();
 }
 
 function timerMenu(idx) {
   layer = -1;
-  var timers = require("sched").getAlarms();
-  var timerIdx = [];
-  var j = 0;
+  const timers = require("sched").getAlarms();
+  const timerIdx = [];
+  let a;
+
   for (let i = 0; i < timers.length; i++) {
     if (timers[i].timer && timers[i].appid == "multitimer") {
       a = i;
       timerIdx.push(a);
-      j++;
     }
   }
-  var a = timers[timerIdx[idx]];
-  var msg = "";
+  a = timers[timerIdx[idx]];
 
   function updateTimer() {
     if (timerInt1[0] == undefined) timerInt1[0] = setTimeout(function() {
@@ -138,7 +138,7 @@ function timerMenu(idx) {
     }, 1000 - (a.t % 1000));
   }
 
-  var s = E.showScroller({
+  const s = E.showScroller({
     h : 40, c : 5,
     back : function() {
       clearInt();
@@ -153,6 +153,7 @@ function timerMenu(idx) {
       }
 
       if (i == 0) {
+        let msg = "";
         if (a.msg) msg = "\n"+(a.msg.length > 10 ? a.msg.substring(0, 10)+"..." : a.msg);
         if (a.on == true) {
           drawMenuItem(formatTime(a.t-getCurrentTime())+msg);
@@ -216,19 +217,17 @@ function timerMenu(idx) {
       }
     }
   });
+  setUI();
 }
 
 function editTimer(idx, a) {
   layer = -1;
-  var timers = require("sched").getAlarms().filter(a => a.timer && a.appid == "multitimer");
-  var alarms = require("sched").getAlarms();
-  var timerIdx = [];
-  var j = 0;
+  const timers = require("sched").getAlarms().filter(a => a.timer && a.appid == "multitimer");
+  const alarms = require("sched").getAlarms();
+  const timerIdx = [];
   for (let i = 0; i < alarms.length; i++) {
     if (alarms[i].timer && alarms[i].appid == "multitimer") {
-      b = i;
-      timerIdx.push(b);
-      j++;
+      timerIdx.push(i);
     }
   }
   if (!a) {
@@ -238,9 +237,10 @@ function editTimer(idx, a) {
   if (!a.data) {
     a.data = { hm: false };
   }
-  var t = decodeTime(a.timer);
+  const t = decodeTime(a.timer);
 
   function editMsg(idx, a) {
+    let msg;
     g.clear();
     idx < 0 ? msg = "" : msg = a.msg;
     require("textinput").input({text:msg}).then(result => {
@@ -256,16 +256,16 @@ function editTimer(idx, a) {
     E.showAlert("Must install keyboard app").then(function() {
       editTimer(idx, a);
     });
+    setUI();
   }
 
-  var menu = {
+  const menu = {
     "": { "title": "Timer" },
     "< Back": () => {
       a.t = getCurrentTime() + a.timer;
       a.last = 0;
       a.data.ot = a.timer;
       a.appid = "multitimer";
-      a.js = "(require('Storage').read('multitimer.alarm.js') !== undefined) ? load('multitimer.alarm.js') : load('sched.js')";
       if (idx < 0) alarms.push(a);
       else alarms[timerIdx[idx]] = a;
       require("sched").setAlarms(alarms);
@@ -313,7 +313,7 @@ function editTimer(idx, a) {
       value: !a.msg ? "" : a.msg.length > 6 ? a.msg.substring(0, 6)+"..." : a.msg,
       //menu glitch? setTimeout required here
       onchange: () => {
-        var kbapp = require("Storage").read("textinput");
+        const kbapp = require("Storage").read("textinput");
         if (kbapp != undefined) setTimeout(editMsg, 0, idx, a);
         else setTimeout(kbAlert, 0);
       }
@@ -325,11 +325,25 @@ function editTimer(idx, a) {
   };
 
   E.showMenu(menu);
+  setUI();
+}
+
+function readJson() {
+  let json = require("Storage").readJSON("multitimer.json", true) || {};
+
+  if (Array.isArray(json)) {
+    // old format, convert
+    json = { sw: json };
+    require("Storage").writeJSON("multitimer.json", json);
+  }
+  if (!json.sw) json.sw = [];
+
+  return json;
 }
 
 function drawSw() {
   layer = 1;
-  var sw = require("Storage").readJSON("multitimer.json", true) || [];
+  const sw = readJson().sw;
 
   function updateTimers(idx) {
     if (!timerInt1[idx]) timerInt1[idx] = setTimeout(function() {
@@ -340,12 +354,13 @@ function drawSw() {
     }, 1000 - (sw[idx].t % 1000));
   }
 
-  var s = E.showScroller({
+  const s = E.showScroller({
     h : 40, c : sw.length+2,
     back : function() {load();},
     draw : (idx, r) => {
 
       function drawMenuItem(a) {
+        let msg;
         g.setClipRect(R.x,R.y,R.x2,R.y2);
         if (idx > 0 && sw[idx-1].msg) msg = "\n"+(sw[idx-1].msg.length > 10 ?
           sw[idx-1].msg.substring(0, 10)+"..." : sw[idx-1].msg);
@@ -375,16 +390,18 @@ function drawSw() {
       else if (idx > 0 && idx < sw.length+1) swMenu(idx-1);
     }
   });
+  setUI();
 }
 
 function swMenu(idx, a) {
   layer = -1;
-  var sw = require("Storage").readJSON("multitimer.json", true) || [];
+  const json = readJson();
+  const sw = json.sw;
   if (sw[idx]) a = sw[idx];
   else {
     a = {"t" : 0, "on" : false, "msg" : ""};
     sw[idx] = a;
-    require("Storage").writeJSON("multitimer.json", sw);
+    require("Storage").writeJSON("multitimer.json", json);
   }
 
   function updateTimer() {
@@ -398,14 +415,14 @@ function swMenu(idx, a) {
 
   function editMsg(idx, a) {
     g.clear();
-    msg = a.msg;
+    const msg = a.msg;
     require("textinput").input({text:msg}).then(result => {
     if (result != "") {
       a.msg = result;
     }
     else delete a.msg;
     sw[idx] = a;
-    require("Storage").writeJSON("multitimer.json", sw);
+    require("Storage").writeJSON("multitimer.json", json);
     swMenu(idx, a);
     });
   }
@@ -414,9 +431,10 @@ function swMenu(idx, a) {
     E.showAlert("Must install keyboard app").then(function() {
       swMenu(idx, a);
     });
+    setUI();
   }
 
-  var s = E.showScroller({
+  const s = E.showScroller({
     h : 40, c : 5,
     back : function() {
       clearInt();
@@ -431,6 +449,7 @@ function swMenu(idx, a) {
       }
 
       if (i == 0) {
+        let msg;
         if (a.msg) msg = "\n"+(a.msg.length > 10 ? a.msg.substring(0, 10)+"..." : a.msg);
         else msg = "";
         if (a.on == true) {
@@ -453,7 +472,7 @@ function swMenu(idx, a) {
     select : (i) => {
 
       function saveAndReload() {
-        require("Storage").writeJSON("multitimer.json", sw);
+        require("Storage").writeJSON("multitimer.json", json);
         s.draw();
       }
 
@@ -483,7 +502,7 @@ function swMenu(idx, a) {
       //edit message
       if (i == 3) {
         clearInt();
-        var kbapp = require("Storage").read("textinput");
+        const kbapp = require("Storage").read("textinput");
         if (kbapp != undefined) editMsg(idx, a);
         else kbAlert();
       }
@@ -496,21 +515,22 @@ function swMenu(idx, a) {
       }
     }
   });
+  setUI();
 }
 
 function drawAlarms() {
   layer = 2;
-  var alarms = require("sched").getAlarms().filter(a => !a.timer);
+  const alarms = require("sched").getAlarms().filter(a => !a.timer);
 
-  var s = E.showScroller({
+  E.showScroller({
     h : 40, c : alarms.length+2,
     back : function() {load();},
     draw : (idx, r) => {
 
       function drawMenuItem(a) {
         g.setClipRect(R.x,R.y,R.x2,R.y2);
-        var on = "";
-        var dow = "";
+        let on = "";
+        let dow = "";
         if (idx > 0 && alarms[idx-1].on == true) on = " - on";
         else if (idx > 0 && alarms[idx-1].on == false) on = " - off";
         if (idx > 0 && idx < alarms.length+1) dow = "\n"+"SMTWTFS".split("").map((d,n)=>alarms[idx-1].dow&(1<<n)?d:".").join("");
@@ -526,7 +546,7 @@ function drawAlarms() {
         .setColor(g.theme.fg).setFont("6x8:2").setFontAlign(0,0).drawString("<   Swipe   >",r.x+(r.w/2),r.y+(r.h/2));
       }
       else if (idx > 0 && idx < alarms.length+1){
-        var str = formatTime(alarms[idx-1].t);
+        const str = formatTime(alarms[idx-1].t);
         drawMenuItem(str.slice(0, -3));
       }
     },
@@ -536,6 +556,7 @@ function drawAlarms() {
       else if (idx > 0 && idx < alarms.length+1) editAlarm(idx-1);
     }
   });
+  setUI();
 }
 
 function editDOW(dow, onchange) {
@@ -543,26 +564,24 @@ function editDOW(dow, onchange) {
     '': { 'title': 'Days of Week' },
     '< Back' : () => onchange(dow)
   };
-  for (var i = 0; i < 7; i++) (i => {
-    var dayOfWeek = require("locale").dow({ getDay: () => i });
+  for (let i = 0; i < 7; i++) (i => {
+    const dayOfWeek = require("locale").dow({ getDay: () => i });
     menu[dayOfWeek] = {
       value: !!(dow&(1<<i)),
       onchange: v => v ? dow |= 1<<i : dow &= ~(1<<i),
     };
   })(i);
   E.showMenu(menu);
+  setUI();
 }
 
 function editAlarm(idx, a) {
   layer = -1;
-  var alarms = require("sched").getAlarms();
-  var alarmIdx = [];
-  var j = 0;
+  const alarms = require("sched").getAlarms();
+  const alarmIdx = [];
   for (let i = 0; i < alarms.length; i++) {
     if (!alarms[i].timer) {
-      b = i;
-      alarmIdx.push(b);
-      j++;
+      alarmIdx.push(i);
     }
   }
   if (!a) {
@@ -572,9 +591,10 @@ function editAlarm(idx, a) {
   if (!a.data) {
     a.data = { hm: false };
   }
-  var t = decodeTime(a.t);
+  const t = decodeTime(a.t);
 
   function editMsg(idx, a) {
+    let msg;
     g.clear();
     idx < 0 ? msg = "" : msg = a.msg;
     require("textinput").input({text:msg}).then(result => {
@@ -590,9 +610,10 @@ function editAlarm(idx, a) {
     E.showAlert("Must install keyboard app").then(function() {
       editAlarm(idx, a);
     });
+    setUI();
   }
 
-  var menu = {
+  const menu = {
     "": { "title": "Alarm" },
     "< Back": () => {
       if (idx >= 0) alarms[alarmIdx[idx]] = a;
@@ -647,7 +668,7 @@ function editAlarm(idx, a) {
       value: !a.msg ? "" : a.msg.length > 6 ? a.msg.substring(0, 6)+"..." : a.msg,
       //menu glitch? setTimeout required here
       onchange: () => {
-        var kbapp = require("Storage").read("textinput");
+        const kbapp = require("Storage").read("textinput");
         if (kbapp != undefined) setTimeout(editMsg, 0, idx, a);
         else setTimeout(kbAlert, 0);
       }
@@ -663,11 +684,23 @@ function editAlarm(idx, a) {
   };
 
   E.showMenu(menu);
+  setUI();
 }
 
-drawTimers();
+function setUI() {
+  // E.showMenu/E.showScroller/E.showAlert call setUI, so we register onDrag() separately
+  // and tack on uiRemove after the fact to avoid interfering
+  Bangle.on("drag", onDrag);
+  const origRemove = Bangle.uiRemove;
+  Bangle.uiRemove = () => {
+    Bangle.removeListener("drag", onDrag);
+    Object.values(timerInt1).forEach(clearTimeout);
+    Object.values(timerInt2).forEach(clearTimeout);
+    if (origRemove) origRemove();
+  };
+}
 
-Bangle.on("drag", e=>{
+function onDrag(e) {
   if (layer < 0) return;
   if (!drag) { // start dragging
     drag = {x: e.x, y: e.y};
@@ -688,4 +721,19 @@ Bangle.on("drag", e=>{
       else if (layer == 2) drawAlarms();
     }
   }
-});
+}
+
+switch (readJson().initialScreen) {
+  case 1:
+    drawSw();
+    break;
+  case 2:
+    drawAlarms();
+    break;
+  case 0:
+  case undefined:
+  default:
+    drawTimers();
+    break;
+}
+}
