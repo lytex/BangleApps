@@ -187,7 +187,7 @@ function gameStart() {
   IMG.ground = { width: 128, height: 3, bpp : 1, buffer : random.buffer };
   frame = 0;
   displayedHighScore = highScore;
-  setInterval(onFrame, 50);
+  setInterval(onFrame, 20);
 }
 function gameStop() {
   rex.alive = false;
